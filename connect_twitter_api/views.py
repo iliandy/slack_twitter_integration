@@ -1,0 +1,71 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+from django.shortcuts import render, redirect, HttpResponse
+
+from tweepy import Stream
+from tweepy import OAuthHandler
+from tweepy import API
+from tweepy.streaming import StreamListener
+from tweepy.utils import import_simplejson
+import requests
+from secrets import *
+
+json = import_simplejson()
+class listener(StreamListener):
+    def on_data(self, raw_data):
+        tweets = json.loads(raw_data)
+        tweet_text = str(tweets["text"])
+
+        slack_webhook_url = "https://hooks.slack.com/services/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"
+        slack_msg = json.dumps({"text": tweet_text})
+        req = requests.post(slack_webhook_url, slack_msg)
+
+        print tweet_text
+        print req.status_code, req.reason
+
+        return True
+
+    def on_error(self, status):
+        print status
+
+def index(request):
+    print "-= Reached / (index.html) =-"
+
+    #consumer key, consumer secret, access token, access secret
+    ckey = my_ckey()
+    csecret = my_csecret()
+    atoken = my_atoken()
+    asecret = my_asecret()
+
+    # OAuth authenticate to connect to Twitter API
+    auth = OAuthHandler(ckey, csecret)
+    auth.set_access_token(atoken, asecret)
+
+    # listen for Twitter streams with hashtag #wodedev
+    twitterStream = Stream(auth, listener())
+    twitterStream.filter(track=["#wodedev"])
+
+    return HttpResponse("twitterStream running...")
+
+def postTweet(request):
+    print request.POST
+
+    return HttpResponse("/tweets route...")
+
+
+    # #consumer key, consumer secret, access token, access secret
+    # ckey = my_ckey()
+    # csecret = my_csecret()
+    # atoken = my_atoken()
+    # asecret = my_asecret()
+    #
+    # # OAuth authenticate to connect to Twitter API
+    # auth = OAuthHandler(ckey, csecret)
+    # auth.set_access_token(atoken, asecret)
+    #
+    # # post Tweet to Twitter
+    # api = API(auth)
+    # api.update_status("#wodedev Post tweet using Django, OAuth, and tweepy!")
+    #
+    # # continue listening for Twitter streams with hashtag #wodedev
+    # return redirect("/")
