@@ -1,3 +1,7 @@
+"""
+Please refer to README.md for project description, usage, and requirements.
+"""
+
 # import required modules, libraries
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
