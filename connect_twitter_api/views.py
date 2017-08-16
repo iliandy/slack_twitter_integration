@@ -1,3 +1,4 @@
+# import required modules, libraries
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.shortcuts import render, redirect, HttpResponse
@@ -11,20 +12,21 @@ from tweepy.streaming import StreamListener
 from tweepy.utils import import_simplejson
 import requests
 from secrets import *
-
 json = import_simplejson()
-class listener(StreamListener):
-    def on_data(self, raw_data):
-        tweets = json.loads(raw_data)
-        tweet_to_slack_text = str(tweets["text"])
 
-        slack_webhook_url = "https://hooks.slack.com/services/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"
+# tweepy Listener class to actively listen for Twitter steams
+class Listener(StreamListener):
+    def on_data(self, raw_data):
+        # convert tweet from unicode to json object and obtain tweet text
+        tweet = json.loads(raw_data)
+        tweet_to_slack_text = str(tweet["text"])
+
+        # create slack msg from dict and convert to json object string, send POST request to Slack webhook URL
+        slack_webhook_url = my_slack_webhook_url()
         slack_msg = json.dumps({"text": tweet_to_slack_text})
         req = requests.post(slack_webhook_url, slack_msg)
 
-        print tweet_to_slack_text
-        print req.status_code, req.reason
-
+        # continue running on_data listener
         return True
 
     def on_error(self, status):
@@ -47,8 +49,8 @@ def index(request):
     # OAuth to Twitter API
     auth = oauthTwitter()
 
-    # listen for Twitter streams with hashtag #wodedev
-    twitterStream = Stream(auth, listener())
+    # listen for Twitter streams with hashtag #wodedev (Slack channel name)
+    twitterStream = Stream(auth, Listener())
     twitterStream.filter(track=["#wodedev"])
 
     return HttpResponse("twitterStream running...")
