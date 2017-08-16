@@ -51,30 +51,28 @@ def index(request):
 
 @method_decorator(csrf_exempt)
 def createTweet(request):
-    if request.method == "POST":
-        slack_to_twitter_text = request.POST.get("text", False)
-
-        # file = open("my_django_logs.txt", "w")
-        # file.write("{}".format(slack_to_twitter_text))
-        # file.close()
-
-        # consumer key, consumer secret, access token, access secret
-        ckey = my_ckey()
-        csecret = my_csecret()
-        atoken = my_atoken()
-        asecret = my_asecret()
-
-        # OAuth authenticate to connect to Twitter API
-        auth = OAuthHandler(ckey, csecret)
-        auth.set_access_token(atoken, asecret)
-
-        # post Slack Tweet text to Twitter
-        api = API(auth)
-        api.update_status("{}".format(slack_to_twitter_text))
-
-        # continue listening for Twitter streams with hashtag #wodedev
-        return redirect("/")
-
-    # request.method == "GET"
-    else:
+    if request.method != "POST":
         return HttpResponse("/tweets GET route...")
+
+    slack_to_twitter_text = request.POST.get("text", False)
+
+    file = open("my_django_logs.txt", "w")
+    file.write("{}".format(slack_to_twitter_text))
+    file.close()
+
+    # consumer key, consumer secret, access token, access secret
+    ckey = my_ckey()
+    csecret = my_csecret()
+    atoken = my_atoken()
+    asecret = my_asecret()
+
+    # OAuth authenticate to connect to Twitter API
+    auth = OAuthHandler(ckey, csecret)
+    auth.set_access_token(atoken, asecret)
+
+    # post Slack Tweet text to Twitter
+    api = API(auth)
+    api.update_status("{}".format(slack_to_twitter_text))
+
+    # respond to Slack slash command
+    return "Successfully tweeted Slack msg to Twitter."
