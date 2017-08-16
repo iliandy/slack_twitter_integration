@@ -30,10 +30,8 @@ class listener(StreamListener):
     def on_error(self, status):
         print status
 
-def index(request):
-    print "-= Reached / (index.html) =-"
-
-    #consumer key, consumer secret, access token, access secret
+def oauthTwitter():
+    # Twitter API app consumer key, consumer secret, access token, access secret
     ckey = my_ckey()
     csecret = my_csecret()
     atoken = my_atoken()
@@ -42,6 +40,12 @@ def index(request):
     # OAuth authenticate to connect to Twitter API
     auth = OAuthHandler(ckey, csecret)
     auth.set_access_token(atoken, asecret)
+
+    return auth
+
+def index(request):
+    # OAuth to Twitter API
+    auth = oauthTwitter()
 
     # listen for Twitter streams with hashtag #wodedev
     twitterStream = Stream(auth, listener())
@@ -49,26 +53,18 @@ def index(request):
 
     return HttpResponse("twitterStream running...")
 
+# bypass Django CSRF token verification, otherwise Slack slash commands are rejected with HTTP 403 code
 @method_decorator(csrf_exempt)
 def createTweet(request):
+    # HTTP GET requests
     if request.method != "POST":
         return HttpResponse("/tweets route, GET request")
 
+    # obtain text from Slack slash command msg object
     slack_to_twitter_text = request.POST.get("text", False)
 
-    file = open("my_django_logs.txt", "w")
-    file.write("{}".format(slack_to_twitter_text))
-    file.close()
-
-    # consumer key, consumer secret, access token, access secret
-    ckey = my_ckey()
-    csecret = my_csecret()
-    atoken = my_atoken()
-    asecret = my_asecret()
-
-    # OAuth authenticate to connect to Twitter API
-    auth = OAuthHandler(ckey, csecret)
-    auth.set_access_token(atoken, asecret)
+    # OAuth to Twitter API
+    auth = oauthTwitter()
 
     # post Slack tweet msg to Twitter
     api = API(auth)
