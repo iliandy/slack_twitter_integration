@@ -52,7 +52,7 @@ def index(request):
 @method_decorator(csrf_exempt)
 def createTweet(request):
     if request.method != "POST":
-        return HttpResponse("/tweets GET route...")
+        return HttpResponse("/tweets route, GET request")
 
     slack_to_twitter_text = request.POST.get("text", False)
 
@@ -70,9 +70,9 @@ def createTweet(request):
     auth = OAuthHandler(ckey, csecret)
     auth.set_access_token(atoken, asecret)
 
-    # post Slack Tweet text to Twitter
+    # post Slack tweet msg to Twitter
     api = API(auth)
     api.update_status("{}".format(slack_to_twitter_text))
 
     # respond to Slack slash command
-    return "Successfully tweeted Slack msg to Twitter."
+    return HttpResponse("Successfully tweeted Slack msg to Twitter.")
