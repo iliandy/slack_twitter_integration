@@ -36,8 +36,8 @@ class Listener(StreamListener):
     def on_error(self, status):
         print status
 
+# OAuth to Twitter API function using Twitter app consumer key, consumer secret, access token, access secret
 def oauthTwitter():
-    # Twitter API app consumer key, consumer secret, access token, access secret
     ckey = my_ckey()
     csecret = my_csecret()
     atoken = my_atoken()
@@ -49,6 +49,7 @@ def oauthTwitter():
 
     return auth
 
+# index function listening for Twitter streams, if found, sends Tweet text to Slack channel
 def index(request):
     # OAuth to Twitter API
     auth = oauthTwitter()
@@ -61,6 +62,7 @@ def index(request):
 
 # bypass Django CSRF token verification, otherwise Slack slash commands are rejected with HTTP 403 code
 @method_decorator(csrf_exempt)
+# createTweet function receives Slack slash command msg, OAuth to Twitter, and tweets msg to Twitter
 def createTweet(request):
     # HTTP GET requests
     if request.method != "POST":
